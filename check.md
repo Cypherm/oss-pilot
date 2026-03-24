@@ -18,8 +18,8 @@ Check all pending PRs and handle everything that needs attention. Works on any r
 ## Step 0: Load Profile
 
 Read the profile from `~/.claude/oss-profiles/<repo>.md` (schema: see `_template.md` bundled with this skill) to get:
-- `repo` — owner/repo (e.g., `openclaw/openclaw`)
-- `fork` — our fork (e.g., `Cypherm/openclaw`)
+- `repo` — owner/repo (e.g., `some-org/some-repo`)
+- `fork` — our fork (e.g., `your-username/some-repo`)
 - `username` — our GitHub username
 - `local_path` — local clone path
 
