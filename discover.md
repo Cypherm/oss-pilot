@@ -16,9 +16,9 @@ Surface the highest-value, most-likely-to-merge PR opportunities. Works on any r
 
 ## Step 0: Load Profile
 
-Read `~/.claude/oss-profiles/<repo>.md` for repo, fork, username, local_path. Profile schema: see `_template.md` (bundled) for expected sections.
+Read `./oss-pilot-data/profiles/<repo>.md` for repo, fork, username, local_path. Profile schema: see `_template.md` (bundled) for expected sections.
 
-**Cold start**: If the profile doesn't exist, this is a new repo. Copy `_template.md` to `~/.claude/oss-profiles/<repo>.md`, fill in the 4 required fields (repo, fork, username, local_path), and ask the user to confirm before proceeding. Also ensure `~/.claude/oss-auto/` and `~/.claude/oss-auto/_archived/` directories exist.
+**Cold start**: If the profile doesn't exist, this is a new repo. Copy `_template.md` to `./oss-pilot-data/profiles/<repo>.md`, fill in the 4 required fields (repo, fork, username, local_path), and ask the user to confirm before proceeding. Also ensure `./oss-pilot-data/context/` and `./oss-pilot-data/context/_archived/` directories exist.
 
 ## Step 0.5: Repo Openness Check
 
@@ -71,7 +71,7 @@ for pr in $(gh pr list -R <REPO> --author <USERNAME> --state open --json number 
 done | sort -u
 
 # Issues we previously attempted (check archived context files)
-grep -l "repo: <REPO>" ~/.claude/oss-auto/_archived/pr-*.md 2>/dev/null | while read f; do
+grep -l "repo: <REPO>" ./oss-pilot-data/context/_archived/pr-*.md 2>/dev/null | while read f; do
   grep -oE 'issue: [0-9]+' "$f" | grep -oE '[0-9]+'
 done | sort -u
 ```

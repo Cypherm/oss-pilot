@@ -1,6 +1,6 @@
 # OSS Profile Template
 #
-# Copy this file to ~/.claude/oss-profiles/<repo-name>.md
+# Copy this file to ./oss-pilot-data/profiles/<repo-name>.md
 # Use the repo's short name (e.g., "cal.com.md", "dify.md", "ollama.md")
 # Fill in the required fields. Optional sections grow as you contribute.
 

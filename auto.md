@@ -18,13 +18,13 @@ Take an issue number and drive it to an opened, reviewed, bot-responded, maintai
 
 ## Step 0: Load Profile
 
-Read `~/.claude/oss-profiles/<repo>.md` to get repo, fork, username, local_path. Also read any "Repo-Specific Rules" and "Lessons Learned" sections — these are hard-won knowledge from previous contributions. Profile schema: see `~/.claude/oss-profiles/_template.md` for expected sections.
+Read `./oss-pilot-data/profiles/<repo>.md` to get repo, fork, username, local_path. Also read any "Repo-Specific Rules" and "Lessons Learned" sections — these are hard-won knowledge from previous contributions. Profile schema: see `./oss-pilot-data/profiles/_template.md` for expected sections.
 
-**Cold start**: If the profile doesn't exist, this is a new repo. Copy `~/.claude/oss-profiles/_template.md` to `~/.claude/oss-profiles/<repo>.md`, fill in the 4 required fields (repo, fork, username, local_path), and ask the user to confirm before proceeding.
+**Cold start**: If the profile doesn't exist, this is a new repo. Copy `./oss-pilot-data/profiles/_template.md` to `./oss-pilot-data/profiles/<repo>.md`, fill in the 4 required fields (repo, fork, username, local_path), and ask the user to confirm before proceeding.
 
 ## Context File Format
 
-Every PR gets a context file at `~/.claude/oss-auto/pr-<repo-short>-<NUMBER>.md`.
+Every PR gets a context file at `./oss-pilot-data/context/pr-<repo-short>-<NUMBER>.md`.
 
 **Principle: GitHub is source of truth for live state. Context files only store our reasoning and decisions.**
 

@@ -45,7 +45,7 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
 openclaw skills install oss-pilot
 
 # Or manually
-git clone https://github.com/Cypherm/oss-pilot.git ~/.claude/skills/oss-pilot
+git clone https://github.com/Cypherm/oss-pilot.git ./skills/oss-pilot
 ```
 
 ## Quick Start

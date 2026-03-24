@@ -8,7 +8,7 @@ user_invocable: true
 
 # OSS PR Check-In Skill
 
-Check all pending PRs and handle everything that needs attention. Works on any repo with a profile at `~/.claude/oss-profiles/<repo-name>.md`.
+Check all pending PRs and handle everything that needs attention. Works on any repo with a profile at `./oss-pilot-data/profiles/<repo-name>.md`.
 
 ## Invocation
 
@@ -17,18 +17,18 @@ Check all pending PRs and handle everything that needs attention. Works on any r
 
 ## Step 0: Load Profile
 
-Read the profile from `~/.claude/oss-profiles/<repo>.md` (schema: see `_template.md` bundled with this skill) to get:
+Read the profile from `./oss-pilot-data/profiles/<repo>.md` (schema: see `_template.md` bundled with this skill) to get:
 - `repo` — owner/repo (e.g., `some-org/some-repo`)
 - `fork` — our fork (e.g., `your-username/some-repo`)
 - `username` — our GitHub username
 - `local_path` — local clone path
 
-If no repo specified, scan `~/.claude/oss-auto/` for context files and infer repos from them. If no context files exist and no repo specified, ask the user which repo to check or suggest running `oss-discover` first.
+If no repo specified, scan `./oss-pilot-data/context/` for context files and infer repos from them. If no context files exist and no repo specified, ask the user which repo to check or suggest running `oss-discover` first.
 
 ## Step 1: Load Active PRs
 
 ```bash
-ls ~/.claude/oss-auto/
+ls ./oss-pilot-data/context/
 ```
 
 Read each `pr-*.md` context file. Also check for PRs not in context files:
@@ -165,7 +165,7 @@ For each PR that was MERGED or CLOSED this check, before removing the context fi
 3. **Route the lesson** (if any):
    - **Repo-specific** (maintainer name, bot quirk, label, convention) → also append to profile's Lessons Learned section
    - **Universal** (methodology improvement, new technique) → flag to user: "This lesson may be universal — consider updating oss-* skill"
-4. **Then** archive context file: `mv pr-<REPO>-<N>.md` → `~/.claude/oss-auto/_archived/`
+4. **Then** archive context file: `mv pr-<REPO>-<N>.md` → `./oss-pilot-data/context/_archived/`
 
 **Why write retrospective into the context file**: The archived file becomes a complete record — approach → decisions → outcome → lesson. When oss-discover encounters a similar issue in the future, checking `_archived/` reveals not just "we tried this" but "we tried this and here's what happened."
 
@@ -217,10 +217,10 @@ For each PR where action was taken, update the context file Decisions section.
 
 ## Context Files
 
-Live at `~/.claude/oss-auto/pr-<REPO-SHORT>-<NUMBER>.md` (e.g., `pr-openclaw-52644.md`). See `/oss-auto` for format.
+Live at `./oss-pilot-data/context/pr-<REPO-SHORT>-<NUMBER>.md` (e.g., `pr-openclaw-52644.md`). See `/oss-auto` for format.
 
 ## Error Handling
 
 - Missing context file for open PR → create from GitHub data
-- Merged/closed PR → archive context file to `~/.claude/oss-auto/_archived/`
+- Merged/closed PR → archive context file to `./oss-pilot-data/context/_archived/`
 - GitHub API failure → report error, skip that PR

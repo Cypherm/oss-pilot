@@ -43,9 +43,9 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
          (avoid past mistakes)
 ```
 
-**Profile** (`~/.claude/oss-profiles/<repo>.md`): Stores repo-specific knowledge — build commands, maintainer styles, bot behavior, lessons learned. Grows with each contribution. See `_template.md` for the schema.
+**Profile** (`./oss-pilot-data/profiles/<repo>.md`): Stores repo-specific knowledge — build commands, maintainer styles, bot behavior, lessons learned. Grows with each contribution. See `_template.md` for the schema.
 
-**Context files** (`~/.claude/oss-auto/pr-<repo>-<N>.md`): Track each PR's approach, bot decisions, and outcome. Archived after merge/close for future reference.
+**Context files** (`./oss-pilot-data/context/pr-<repo>-<N>.md`): Track each PR's approach, bot decisions, and outcome. Archived after merge/close for future reference.
 
 ## The Four Skills
 
@@ -95,6 +95,6 @@ Morning check-in for all pending PRs.
 ## Data Directories
 
 The system creates and manages these directories:
-- `~/.claude/oss-profiles/` — one profile per repo
-- `~/.claude/oss-auto/` — active PR context files
-- `~/.claude/oss-auto/_archived/` — completed PR context files (for learning)
+- `./oss-pilot-data/profiles/` — one profile per repo
+- `./oss-pilot-data/context/` — active PR context files
+- `./oss-pilot-data/context/_archived/` — completed PR context files (for learning)

@@ -16,7 +16,7 @@ Validate PR quality and maximize merge probability. Works on any repo with a pro
 
 ## Step 0: Load Profile
 
-Read `~/.claude/oss-profiles/<repo>.md` thoroughly. Profile schema: see `_template.md` (bundled) for expected sections.
+Read `./oss-pilot-data/profiles/<repo>.md` thoroughly. Profile schema: see `_template.md` (bundled) for expected sections.
 
 **Cold start**: If the profile doesn't exist, create one from `_template.md` with the 4 required fields and ask the user to confirm before proceeding.
 
