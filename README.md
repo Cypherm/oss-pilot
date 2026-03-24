@@ -41,11 +41,11 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
 ## Install
 
 ```bash
-# Manual install
-git clone https://github.com/Cypherm/oss-pilot.git ~/.claude/skills/oss-pilot
+# Via ClawHub (recommended)
+openclaw skills install oss-pilot
 
-# Via ClawHub (coming soon)
-# openclaw skills install oss-pilot
+# Or manually
+git clone https://github.com/Cypherm/oss-pilot.git ~/.claude/skills/oss-pilot
 ```
 
 ## Quick Start
