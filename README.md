@@ -1,14 +1,16 @@
 # OSS Pilot
 
-I'm a PM, not an engineer. I don't write code for a living — I build products.
+I'm a PM, not an engineer
 
-But I wanted to contribute to open-source projects I use every day. So I built this system: a set of OpenClaw skills that handle the entire contribution lifecycle — from finding the right issue to getting a PR merged. I used it to land PRs on [OpenClaw](https://github.com/openclaw/openclaw) (329K+ stars), [Cal.com](https://github.com/calcom/cal.com), and other repos.
+My first two PRs on [OpenClaw](https://github.com/openclaw/openclaw) (329K+ ⭐) started the same way — I hit a bug that affected me, fixed it with Claude Code, and submitted a PR. Both got merged. One shipped in v3.13, the other in v3.22
 
-Every feature in this system exists because I hit a real wall. I wasted hours on issues that were already fixed. I picked issues with 6 competing PRs. I tried to fix core infrastructure on my first contribution and got nowhere. Each failure became a rule in the system, so the next attempt was better.
+After the second one I thought: can this whole process be automated?
 
-If you want to contribute to open source but don't know where to start, or if you're tired of rejected PRs — this is for you.
+Inspired by Karpathy's [autoresearch](https://github.com/andrej-karpathy/autoresearch), I built this — a set of OpenClaw skills that handle the entire open-source contribution lifecycle. It finds issues, implements fixes, opens PRs, handles bot reviews, learns from each contribution, and gets better over time
 
-Built by [@Cypherm](https://github.com/Cypherm).
+Every feature exists because I hit a real wall doing it manually
+
+Built by [@Cypherm](https://github.com/Cypherm)
 
 ---
 
@@ -30,10 +32,16 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
 | **pr** | Quality gate: root cause analysis, description, bot strategy | "Is this PR ready?" |
 | **check** | Monitor CI, bot comments, stale status, take action | "What needs attention today?" |
 
+## Results So Far
+
+- **OpenClaw** (329K ⭐) — 2 merged PRs, shipped in v3.13 and v3.22
+- **Cal.com** (35K ⭐) — 1 PR in review
+- More repos running in background
+
 ## Install
 
 ```bash
-# Manual install (recommended)
+# Manual install
 git clone https://github.com/Cypherm/oss-pilot.git ~/.claude/skills/oss-pilot
 
 # Via ClawHub (coming soon)
@@ -57,13 +65,13 @@ gh auth status
 > oss check
 ```
 
-On first run, the system creates a **profile** for each repo — a living document that captures build commands, maintainer styles, bot behavior, and lessons learned. See `_template.md` for the schema and `example.md` for what a mature profile looks like.
+On first run, the system creates a **profile** for each repo — a living document that captures build commands, maintainer styles, bot behavior, and lessons learned. See `_template.md` for the schema and `example.md` for what a mature profile looks like after weeks of contributions
 
 ## How It Works
 
 ### The Learning Loop
 
-Every PR you open goes through this cycle:
+Every PR goes through this cycle:
 
 1. **Discover** finds issues by scanning 8 sources (bounty labels → bugs → CI failures → codebase cleanup), checking repo openness, issue velocity, and competition
 2. **Auto** implements the fix: reads code, traces root cause, writes tests, opens PR, responds to bots, pings maintainer
@@ -73,35 +81,35 @@ Every PR you open goes through this cycle:
 
 ### What Makes It Different
 
-- **Profile system**: Each repo builds institutional knowledge over time — maintainer preferences, bot behaviors, architecture patterns. Your 10th PR is informed by lessons from your 1st.
-- **Competition check**: Two-level (issue + code) to avoid wasting time on crowded issues.
-- **Repo openness check**: Measures external contributor merge rate before you invest hours.
-- **Velocity check**: Detects fast-moving repos where issues get claimed in hours.
-- **Version/comment intelligence**: Reads issue comments and release notes to avoid working on already-fixed bugs.
-- **Maintenance**: Auto-prunes stale lessons and old context files to keep signal-to-noise ratio high.
+- **Profile system**: Each repo builds institutional knowledge over time. Your 10th PR is informed by lessons from your 1st
+- **Competition check**: Two-level (issue + code) to avoid wasting time on crowded issues
+- **Repo openness check**: Measures external contributor merge rate before you invest hours
+- **Velocity check**: Detects fast-moving repos where issues get claimed in hours
+- **Version/comment intelligence**: Reads issue comments and release notes to avoid working on already-fixed bugs
+- **Maintenance**: Auto-prunes stale lessons and old context files
 
 ## File Structure
 
 ```
 oss-pilot/
-├── SKILL.md          # Entry point — routing + quick start guide
-├── discover.md       # Issue discovery skill (8 sources + verification)
+├── SKILL.md          # Entry point — routing + quick start
+├── discover.md       # Issue discovery (8 sources + verification)
 ├── auto.md           # End-to-end PR automation (orchestrator)
 ├── pr.md             # PR quality validation (root cause + description)
-├── check.md          # Daily PR monitoring + retrospective + maintenance
+├── check.md          # Daily monitoring + retrospective + maintenance
 ├── _template.md      # Profile template for new repos
-└── example.md        # Example mature profile (anonymized real data)
+└── example.md        # Real profile from 2+ months of contributions (anonymized)
 ```
 
-## Data Directories
+## Built From Real Contributions
 
-The system creates and manages:
+Every feature exists because I hit a real problem:
 
-```
-~/.claude/oss-profiles/        # One profile per repo (grows with experience)
-~/.claude/oss-auto/            # Active PR context files
-~/.claude/oss-auto/_archived/  # Completed PRs (approach + decisions + outcome)
-```
+- **Velocity check** → Added after issues got claimed within hours
+- **Version check** → Added after investigating an issue already fixed in a newer release
+- **Comment intelligence** → Added after missing a comment that said "likely fixed in next version"
+- **First PR rules** → Added after attempting a core infrastructure fix on first contribution
+- **Repo openness check** → Added after investing time on a repo that merges <10% external PRs
 
 ## Prerequisites
 
@@ -111,21 +119,7 @@ The system creates and manages:
 
 ## Language Support
 
-Tested on TypeScript, Python, and Go repos. Source 8 (codebase scan) has language-specific patterns for:
-- **Node.js/TypeScript**: Duplicate i18n keys, missing alt text
-- **Python**: Unused imports (ruff), type annotation gaps (mypy)
-- **Go**: Unformatted files (gofmt), static analysis (go vet)
-- **Rust**: Clippy warnings
-
-## Built From Real Contributions
-
-This system was built and refined through actual open-source contributions across multiple repos (cal.com, ollama, dify, and others). Every feature exists because we hit a real problem:
-
-- **Velocity check** → Added after Dify issues got claimed within hours
-- **Version check** → Added after investigating an issue already fixed in a newer release
-- **Comment intelligence** → Added after missing a comment that said "likely fixed in next version"
-- **First PR rules** → Added after attempting a core infrastructure fix on first contribution
-- **Repo openness check** → Added after investing time on a repo that merges <10% external PRs
+Tested on TypeScript, Python, and Go repos
 
 ## License
 
