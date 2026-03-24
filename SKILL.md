@@ -15,7 +15,7 @@ metadata:
 
 # OSS Contribution System
 
-A complete system for contributing to open-source repos. Four skills work together in a learning loop — each contribution makes the next one better.
+A complete system for contributing to open-source repos. Four skills work together in a learning loop --each contribution makes the next one better.
 
 ## Quick Start
 
@@ -23,7 +23,7 @@ A complete system for contributing to open-source repos. Four skills work togeth
    - The system will create a profile, check repo openness, and find issues for you.
 
 2. **Found an issue?** Say: `oss auto <repo> #12345`
-   - End-to-end: implement → open PR → respond to bots → ping maintainer.
+   - End-to-end: implement -> open PR -> respond to bots -> ping maintainer.
 
 3. **Already have a PR?** Say: `oss check <repo>`
    - Checks CI, bot comments, stale status, and takes action.
@@ -34,21 +34,18 @@ A complete system for contributing to open-source repos. Four skills work togeth
 ## How the System Works
 
 ```
-discover ──→ auto ──→ pr ──→ check ──→ retrospective
-   ↑                   ↑       │              │
-   │                   └───────┘              │
-   │              (human review loop)         │
-   │                                          │
-   │                            ┌─────────────┼──────────┐
-   │                            ▼             ▼          ▼
-   │                     context file      profile    flag universal
-   │                     (Outcome)      (Lessons)    (update skill)
-   │                            │
-   └──── checks _archived/ ────┘
+discover --> auto --> pr --> check --> retrospective
+   ^                   ^       |              |
+   |                   +-------+              |
+   |              (human review loop)         |
+   |                                          v
+   |                              profile grows (lessons, patterns)
+   |                                          |
+   +---- checks archived history -------------+
          (avoid past mistakes)
 ```
 
-**Profile** (`./oss-pilot-data/profiles/<repo>.md`): Stores repo-specific knowledge — build commands, maintainer styles, bot behavior, lessons learned. Grows with each contribution. See `_template.md` for the schema.
+**Profile** (`./oss-pilot-data/profiles/<repo>.md`): Stores repo-specific knowledge --build commands, maintainer styles, bot behavior, lessons learned. Grows with each contribution. See `_template.md` for the schema.
 
 **Context files** (`./oss-pilot-data/context/pr-<repo>-<N>.md`): Track each PR's approach, bot decisions, and outcome. Archived after merge/close for future reference.
 
@@ -58,7 +55,7 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
 Find high-value issues with the highest merge probability.
 - Checks repo openness (external contributor merge rate)
 - Checks issue velocity (how fast issues get claimed)
-- Scans 8 sources: high-signal labels → bugs → CI failures → reclaimable PRs → merged PR gaps → scoped modules → area merge rate → codebase cleanup
+- Scans 8 sources: high-signal labels -> bugs -> CI failures -> reclaimable PRs -> merged PR gaps -> scoped modules -> area merge rate -> codebase cleanup
 - Verifies bugs still exist, checks comments for signals, evaluates fix feasibility
 
 **Read: `discover.md`**
@@ -66,7 +63,7 @@ Find high-value issues with the highest merge probability.
 ### oss-auto (auto.md)
 One command from issue to opened PR. Orchestrates discover + pr.
 - Cold start: auto-creates profile for new repos
-- Feasibility check → implement → open PR → respond to bots → mark ready → ping maintainer
+- Feasibility check -> implement -> open PR -> respond to bots -> mark ready -> ping maintainer
 - Auto-detects build tooling (Node/Python/Go/Rust/Make)
 - Reads CONTRIBUTING.md and CLAUDE.md for repo conventions
 
@@ -100,6 +97,6 @@ Morning check-in for all pending PRs.
 ## Data Directories
 
 The system creates and manages these directories:
-- `./oss-pilot-data/profiles/` — one profile per repo
-- `./oss-pilot-data/context/` — active PR context files
-- `./oss-pilot-data/context/_archived/` — completed PR context files (for learning)
+- `./oss-pilot-data/profiles/` --one profile per repo
+- `./oss-pilot-data/context/` --active PR context files
+- `./oss-pilot-data/context/_archived/` --completed PR context files (for learning)
