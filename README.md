@@ -1,4 +1,4 @@
-# OSS Auto Suite
+# OSS Pilot
 
 I'm a PM, not an engineer. I don't write code for a living — I build products.
 
@@ -34,10 +34,10 @@ discover ──→ auto ──→ pr ──→ check ──→ retrospective
 
 ```bash
 # Manual install (recommended)
-git clone https://github.com/Cypherm/oss-auto-suite.git ~/.claude/skills/oss-auto-suite
+git clone https://github.com/Cypherm/oss-pilot.git ~/.claude/skills/oss-pilot
 
 # Via ClawHub (coming soon)
-# openclaw skills install oss-auto-suite
+# openclaw skills install oss-pilot
 ```
 
 ## Quick Start
@@ -83,7 +83,7 @@ Every PR you open goes through this cycle:
 ## File Structure
 
 ```
-oss-auto-suite/
+oss-pilot/
 ├── SKILL.md          # Entry point — routing + quick start guide
 ├── discover.md       # Issue discovery skill (8 sources + verification)
 ├── auto.md           # End-to-end PR automation (orchestrator)
