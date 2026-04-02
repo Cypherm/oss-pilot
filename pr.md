@@ -2,7 +2,7 @@
 name: oss-pr
 description: PR preparation and review for any open-source repo. Validates quality,
   checks for duplicates, generates PR description. Triggers on "oss pr", "review PR",
-  "prepare PR", "check PR quality".
+  "prepare PR", "check PR quality", "openclaw PR".
 user_invocable: true
 ---
 
@@ -16,11 +16,7 @@ Validate PR quality and maximize merge probability. Works on any repo with a pro
 
 ## Step 0: Load Profile
 
-Read `./oss-pilot-data/profiles/<repo>.md` thoroughly. Profile schema: see `_template.md` (bundled) for expected sections.
-
-**Cold start**: If the profile doesn't exist, create one from `_template.md` with the 4 required fields and ask the user to confirm before proceeding.
-
-In particular:
+Read `./oss-pilot-data/profiles/<repo>.md` thoroughly. Profile schema: see `./oss-pilot-data/profiles/_template.md` for expected sections. In particular:
 - **Repo-Specific Rules** -- mandatory constraints (commit scripts, PR limits, generated files)
 - **Architecture Patterns** -- these encode maintainer preferences that are the #1 reason PRs get rejected. Do not skip.
 - **Maintainer Review Styles** -- if present, tells you what each reviewer cares about
@@ -28,10 +24,12 @@ In particular:
 
 ## Phase 1: Feasibility Check
 
-1. **Duplicate check (two-level):**
-   - Issue-level: `gh pr list -R <REPO> --search "<issue>" --state open`
-   - Code-level: `gh pr list -R <REPO> --search "<context> <function>" --state open` -- use context keyword + function name to avoid false positives. Skim titles to filter noise.
-   - If >2 competing PRs actually targeting the same fix -> warn
+1. **Duplicate check (three-level):**
+   - Issue-level (open): `gh pr list -R <REPO> --search "<issue>" --state open`
+   - Issue-level (merged): `gh pr list -R <REPO> --search "<issue>" --state merged --limit 5` -- if a fix was already merged, our PR is a duplicate. Also search by keywords: `gh pr list -R <REPO> --search "<keywords>" --state merged --limit 5`
+   - Code-level (open): `gh pr list -R <REPO> --search "<context> <function>" --state open` -- use context keyword + function name to avoid false positives. Skim titles to filter noise.
+   - If >2 competing open PRs actually targeting the same fix --> warn
+   - If a merged PR already fixes the same issue --> **stop**. Do not open a duplicate.
    - **Prior art**: If earlier PRs exist for the same issue, acknowledge them in your PR description. Maintainers flag contributors who ignore prior work.
 2. **Active PR count**: Check profile for max limit
 3. **Branch cleanliness**: No unrelated files staged -- no AI session logs, debug artifacts, `.env` files, PII, or unrelated commits from bad merge/rebase. Some repos auto-close dirty branches.
@@ -46,11 +44,11 @@ Before writing code, answer these questions:
 
 3. **"Does this preserve existing semantic contracts?"** -- Data structure invariants, lifecycle guarantees, API response shapes. Breaking a contract that downstream code relies on is worse than the original bug.
 
-4. **Cross-boundary tracing** -- For fixes where data crosses boundaries (UI -> API, config -> runtime, external input -> internal state), trace BOTH sides:
+4. **Cross-boundary tracing** -- For fixes where data crosses boundaries (UI --> API, config --> runtime, external input --> internal state), trace BOTH sides:
    - **Producer**: How does the server handler set, parse, and return the fields?
    - **Wire format**: What exact shape does the data have at the API boundary? Check type definitions.
    - **Consumer**: How does the UI/client transform the data? Trace all callers of the function being fixed.
-   Only by tracing both sides can you find the right fix point. A guard like `includes("/")` may seem correct at the consumer, but can fail when "/" is part of a vendor prefix rather than a separator -- only tracing producer -> wire -> consumer reveals the correct fix (e.g., `startsWith(provider + "/")` instead).
+   Only by tracing both sides can you find the right fix point. A guard like `includes("/")` may seem correct at the consumer, but can fail when "/" is part of a vendor prefix rather than a separator -- only tracing producer --> wire --> consumer reveals the correct fix (e.g., `startsWith(provider + "/")` instead).
 
 If the profile has "Architecture Patterns" -- read and follow them.
 
@@ -59,22 +57,22 @@ If the profile has "Architecture Patterns" -- read and follow them.
 These are universal failure modes that get PRs rejected -- regardless of repo:
 
 **Wrong root cause:**
-- Mistaking log noise for a crash -> disabling a feature to "fix" startup failure, when the real issue is verbose retry logging
-- Adding a cache TTL to fix stale data -> when the real problem is cache-key divergence across multiple code paths
-- Adding a guard at the consumer -> when the producer's wire format makes the guard's assumption invalid (e.g., a "/" in a vendor-prefixed ID is data, not a separator)
+- Mistaking log noise for a crash --> disabling a feature to "fix" startup failure, when the real issue is verbose retry logging
+- Adding a cache TTL to fix stale data --> when the real problem is cache-key divergence across multiple code paths
+- Adding a guard at the consumer --> when the producer's wire format makes the guard's assumption invalid (e.g., a "/" in a vendor-prefixed ID is data, not a separator)
 
 **Unintended blast radius:**
-- Setting `rejectUnauthorized = false` for one case -> but it silently disables cert validation for ALL connections of that type
-- Fixing a shared function for your use case -> but breaking another caller's invariant (buffer lifecycle, compaction boundary, queue semantics)
+- Setting `rejectUnauthorized = false` for one case --> but it silently disables cert validation for ALL connections of that type
+- Fixing a shared function for your use case --> but breaking another caller's invariant (buffer lifecycle, compaction boundary, queue semantics)
 
 **Anti-patterns in the diff:**
-- Multiple boolean flags tracking related state -> should be a single enum or ordered array
-- Nested try/catch with duplicated recovery -> should be a data-driven loop over an attempts array
-- Adding new exports for each variant -> should extend existing types with optional fields
-- Separate code paths for similar operations -> should be a unified chain
+- Multiple boolean flags tracking related state --> should be a single enum or ordered array
+- Nested try/catch with duplicated recovery --> should be a data-driven loop over an attempts array
+- Adding new exports for each variant --> should extend existing types with optional fields
+- Separate code paths for similar operations --> should be a unified chain
 - Hardcoded values that belong in config/constants
-- Adding special-case `if` branches -> should extend existing data structures
-- Channel/module-specific fix where a shared fix is possible -> fix the root cause in shared infrastructure
+- Adding special-case `if` branches --> should extend existing data structures
+- Channel/module-specific fix where a shared fix is possible --> fix the root cause in shared infrastructure
 
 ## Phase 3: Diff Analysis
 
@@ -83,23 +81,23 @@ DEFAULT_BRANCH=$(gh repo view <REPO> --json defaultBranchRef --jq .defaultBranch
 git diff --stat upstream/$DEFAULT_BRANCH...HEAD
 ```
 
-- XS: <50 lines -> ideal
-- S: 50-200 -> good
-- M: 200-500 -> warn "consider splitting"
-- L: >500 -> fail "split this PR"
+- XS: <50 lines --> ideal
+- S: 50-200 --> good
+- M: 200-500 --> warn "consider splitting"
+- L: >500 --> fail "split this PR"
 
-Scope check: all changed files in one domain? Mixing feature + refactor + fix -> warn "one concern per PR."
+Scope check: all changed files in one domain? Mixing feature + refactor + fix --> warn "one concern per PR."
 
 ## Phase 4: Build & Test
 
 **Auto-detect tooling from repo:**
-- `package.json` -> read scripts for format, lint, test commands. Check for lock file to determine package manager (pnpm-lock.yaml -> pnpm, yarn.lock -> yarn, package-lock.json -> npm).
-- `Cargo.toml` -> `cargo fmt && cargo clippy && cargo test`
-- `go.mod` -> `go fmt && go vet && go test ./...`
-- `Makefile` -> `make lint && make test`
+- `package.json` --> read scripts for format, lint, test commands. Check for lock file to determine package manager (pnpm-lock.yaml --> pnpm, yarn.lock --> yarn, package-lock.json --> npm).
+- `Cargo.toml` --> `cargo fmt && cargo clippy && cargo test`
+- `go.mod` --> `go fmt && go vet && go test ./...`
+- `Makefile` --> `make lint && make test`
 - Profile overrides take precedence (e.g., custom commit scripts)
 
-Run: format -> lint -> type-check -> test (in that order).
+Run: format --> lint --> type-check --> test (in that order).
 
 ### Live Verification (when available)
 
@@ -112,15 +110,66 @@ Check the profile's "Live Verification" section for repo-specific tools and URLs
 
 ## Phase 5: PR Description
 
-**Auto-detect template**: Read `.github/pull_request_template.md` if it exists. Fill it out following the template structure.
+### Step 1: Fetch the repo's PR template (MANDATORY)
 
-**If no template**, use this format:
+```bash
+gh api repos/<REPO>/contents/.github/pull_request_template.md -H "Accept: application/vnd.github.raw+json" 2>/dev/null
+```
+
+If the command succeeds --> use that template verbatim as the skeleton. Fill in **every section** -- do not skip sections, do not collapse them, do not reorder them. If a section is not applicable, write `N/A` rather than omitting it.
+
+If the command fails (404 / permissions) --> try the local clone:
+```bash
+cat <LOCAL_PATH>/.github/pull_request_template.md 2>/dev/null
+```
+
+**Only if both fail** --> learn the format from the repo's own merged PRs (Step 1b).
+
+### Step 1b: Learn format from merged PRs (ONLY when no template)
+
+When the repo has no PR template, do NOT immediately use the fallback. Instead, learn what format this repo actually uses:
+
+```bash
+# 1. Read the 5 most recently merged PRs
+for PR in $(gh pr list -R <REPO> --state merged --limit 5 --json number --jq '.[].number'); do
+  echo "=== PR #$PR ==="
+  gh pr view $PR -R <REPO> --json body --jq '.body[:500]'
+done
+```
+
+Extract the common pattern: which sections appear? What level of detail? Checkboxes or free text? Formal or informal?
+
+If the recent 5 PRs don't include a PR similar to yours (e.g., yours is a bug fix but all 5 are features), search for similar changes:
+
+```bash
+# 2. Find 3 merged PRs with similar change type or area
+gh pr list -R <REPO> --state merged --search "<change-type> <area-keyword>" --limit 3 --json number --jq '.[].number'
+# Read their bodies the same way
+```
+
+**Use the observed pattern as your skeleton.** Match the section structure, heading style, and level of detail from the merged PRs. If merged PRs are minimal (just a summary + test output), write a minimal description. If they use structured sections, match that structure.
+
+**Fall back to the fallback template below only if**: the repo has <5 merged PRs total, or the merged PR descriptions are empty/one-liners with no discernible pattern.
+
+### Step 2: Fill the template
+
+Whether using the repo template, a learned pattern, or the fallback, follow these rules:
+
+- **Use the exact section headings, checkbox formats, and ordering from the template.** Do not rename sections, merge sections, or use free text where checkboxes are expected.
+- **"What did NOT change"** is the most important content. Maintainers check scope boundaries first.
+- **"What I Did NOT Verify"** -- be honest about gaps. Listing unverified scenarios is valued, not penalized.
+- Include actual test output as evidence, not just claims.
+- For bug fixes: fill Root Cause with sub-bullets (root cause, missing guardrail, prior context, why now) and Regression Test Plan (coverage level, target test, scenario, why smallest guardrail).
+- For all PRs: fill Repro + Verification with environment details and numbered steps (adapt from the linked issue if available).
+
+### Fallback template (ONLY when repo has no template)
 
 ```markdown
 ## Summary
-**Problem**: [what's broken and who it affects]
-**Fix**: [what changed, 2-3 bullets]
-**What did NOT change**: [scope boundary -- this is the MOST IMPORTANT section]
+- **Problem**: [what's broken and who it affects]
+- **Why it matters**: [impact]
+- **What changed**: [2-3 bullets]
+- **What did NOT change** (scope boundary): [explicit boundaries]
 
 ## Change Type
 - [ ] Bug fix (non-breaking)
@@ -153,11 +202,6 @@ If this breaks in production:
 - **Blast radius**: [what's affected]
 ```
 
-**Key rules:**
-- **"What did NOT change"** is the most important section. Maintainers check scope boundaries first. A PR that clearly states what it doesn't touch gives reviewers confidence.
-- **"What I Did NOT Verify"** -- be honest about gaps. Listing unverified scenarios is valued, not penalized.
-- Include actual test output as evidence, not just claims.
-
 **Description-Diff alignment check (CRITICAL for iterated PRs):**
 **This is a formal gate.** Do NOT request human review until description-diff alignment is verified. Stale descriptions are the most common mistake after iterating on bot feedback.
 
@@ -184,9 +228,9 @@ Addressed in [commit-hash]. What changed: [1 sentence]. Validation: `<test comma
 
 **Handling repeat concerns across pushes:**
 Bots re-review on every push and often raise the same concern again.
-1. First occurrence -> address substantively
-2. Second occurrence -> "This was addressed in the prior reply (see above). [1-sentence restatement]."
-3. Third+ occurrence -> "Same concern as above -- see prior replies."
+1. First occurrence --> address substantively
+2. Second occurrence --> "This was addressed in the prior reply (see above). [1-sentence restatement]."
+3. Third+ occurrence --> "Same concern as above -- see prior replies."
 
 Never ignore even duplicate concerns -- unanswered comments look bad when maintainers scan the thread.
 
@@ -207,7 +251,7 @@ Ping format:
 
 Do NOT ping until: all bot comments answered + description-diff alignment verified + one of:
 - CI fully green, OR
-- CI has upstream-only failures, our area-specific checks pass, and triage comment is posted (see oss-check CI Triage -- [WARN] status means ready to ping)
+- CI has upstream-only failures, our area-specific checks pass, and triage comment is posted (see oss-check CI Triage -- [yellow] status means ready to ping)
 
 **Adapting to the reviewer you get:** Don't guess reviewer style in advance. Once someone reviews, read 2-3 of their recent reviews on other PRs to calibrate your responses. Check the profile's "Maintainer Review Styles" section if available.
 
